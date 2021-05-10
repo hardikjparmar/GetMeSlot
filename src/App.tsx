@@ -25,7 +25,7 @@ import Navigator from './Navigation/RootNavigation';
 import BeneficiaryListScreen from './Components/BeneficiaryListScreen/BeneficiaryListScreen';
 
 import {
-  districtId,
+  DISTRICT_ID_PREF,
   FEE_PREF,
   minAge,
   VACCINE_PREF,
@@ -42,6 +42,7 @@ import {
 } from './Components/SettingsScreen/SettingsScreen';
 import {
   getUserAgePreference,
+  getUserDistrictIdPreference,
   getUserFeeTypePreference,
   getUserVaccinePreference,
 } from './Storage/LocalStorage';
@@ -111,10 +112,16 @@ const App = () => {
     const agePromise = getUserAgePreference();
     const vaccinePromise = getUserVaccinePreference();
     const feePromise = getUserFeeTypePreference();
+    const districtIdPromise = getUserDistrictIdPreference();
 
-    const allPromise = Promise.all([agePromise, vaccinePromise, feePromise]);
+    const allPromise = Promise.all([
+      agePromise,
+      vaccinePromise,
+      feePromise,
+      districtIdPromise,
+    ]);
 
-    allPromise.then(([age, vaccine, fee]) => {
+    allPromise.then(([age, vaccine, fee, disId]) => {
       let preferredAge = minAge;
       if (age) {
         preferredAge = age;
@@ -130,11 +137,16 @@ const App = () => {
         preferredFees = fee;
       }
       console.log('Preferred Fee: ' + preferredFees);
+      let preferredDistrictId = DISTRICT_ID_PREF;
+      if (disId) {
+        preferredDistrictId = disId;
+      }
+      console.log('Preferred District: ' + preferredDistrictId);
       const vaccineParam =
         preferredVaccine !== VaccineType[VaccineType.BOTH]
           ? preferredVaccine
           : undefined;
-      getSlots(districtId, today(), '', vaccineParam).then(res => {
+      getSlots(preferredDistrictId, today(), '', vaccineParam).then(res => {
         if (res) {
           setCenters(res);
           const filteredList = res.filter(item => {

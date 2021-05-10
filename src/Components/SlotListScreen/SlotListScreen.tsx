@@ -17,6 +17,7 @@ import {
   checkUserStatus,
   getBeneficiaryList,
   getUserAgePreference,
+  getUserDistrictIdPreference,
   getUserVaccinePreference,
 } from '../../Storage/LocalStorage';
 import {RadioButton} from '../RadioButton/RadioButton';
@@ -27,7 +28,7 @@ import {today} from '../../DateHelper/DateHelper';
 import {
   AgeFilters,
   AvailableVaccineTypes,
-  districtId,
+  DISTRICT_ID_PREF,
   FeeTypeChoices,
   minAge,
 } from '../../Constants/Constants';
@@ -64,6 +65,9 @@ const SlotListScreen = () => {
     VaccineType.BOTH,
   );
   const [selectedFeeType, setSelectedFeeType] = useState(FeeType.BOTH);
+  const [prefDistrictId, setPrefDistrictId] = useState<string>(
+    DISTRICT_ID_PREF,
+  );
 
   useLayoutEffect(() => {
     checkUserStatus().then(cred => {
@@ -88,18 +92,26 @@ const SlotListScreen = () => {
   });
 
   useEffect(() => {
-    getSlotsConsumer(districtId, today());
     getSavedBeneficiaryList();
-    getUserAgePreference().then(age => {
+    const promise = Promise.all([
+      getUserAgePreference(),
+      getUserVaccinePreference(),
+      getUserDistrictIdPreference(),
+    ]);
+    promise.then(([age, vaccineString, disId]) => {
       if (age) {
         setAgeFilter(age.toString());
       }
-    });
-    getUserVaccinePreference().then(vaccineString => {
       if (vaccineString) {
         const newType = VaccineType[vaccineString as keyof typeof VaccineType];
         setSelectedVaccine(newType);
       }
+      let pDistrictId = prefDistrictId;
+      if (disId) {
+        pDistrictId = disId;
+        setPrefDistrictId(pDistrictId);
+      }
+      getSlotsConsumer(pDistrictId, today());
     });
   }, []);
 
@@ -169,7 +181,7 @@ const SlotListScreen = () => {
 
   const onRefresh = () => {
     setIsFetching(true);
-    getSlotsConsumer(districtId, today());
+    getSlotsConsumer('' + prefDistrictId, today());
   };
 
   const onAgeFilterChange = (key: string) => {
@@ -227,7 +239,7 @@ const SlotListScreen = () => {
   const onBeneficiarySelected = (beneficiary: Array<Beneficiary>) => {
     setSelectedBens(beneficiary);
     setIsFetching(true);
-    getSlotsConsumer(districtId, today());
+    getSlotsConsumer('' + prefDistrictId, today());
   };
 
   const onSettingsPressed = () => {

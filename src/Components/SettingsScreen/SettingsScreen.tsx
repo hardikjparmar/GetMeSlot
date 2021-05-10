@@ -1,25 +1,37 @@
 import {RouteProp, useRoute} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
+import {Picker} from '@react-native-picker/picker';
 import {
   AgeFilters,
   AvailableVaccineTypes,
+  DISTRICT,
   DoseChoices,
   FeeTypeChoices,
   minAge,
+  STATE,
+  STATES,
 } from '../../Constants/Constants';
 import {RootStackParamList} from '../../Navigation/RootStackParams';
 import {
   getUserAgePreference,
+  getUserDistrictIdPreference,
   getUserDosePreference,
   getUserFeeTypePreference,
+  getUserStateIdPreference,
   getUserVaccinePreference,
   saveUserAgePreference,
+  saveUserDistrictIdPreference,
+  saveUserDistrictPreference,
   saveUserDosePreference,
+  saveUserStateIdPreference,
+  saveUserStatePreference,
   saveUserVaccinePreference,
 } from '../../Storage/LocalStorage';
 import {RadioButton} from '../RadioButton/RadioButton';
 import {renderBeneficiary} from '../SlotListScreen/SlotListScreen';
+import {ScrollView} from 'react-native-gesture-handler';
+import {getDistricts} from '../../API/APIHelper';
 
 type SettingsScreenRouteProp = RouteProp<RootStackParamList, 'SettingsScreen'>;
 
@@ -79,6 +91,10 @@ export const SettingsScreen = () => {
   );
   const [ageFilter, setAgeFilter] = useState(minAge.toString());
   const [selectedFeeType, setSelectedFeeType] = useState(FeeType.BOTH);
+  const [selectedState, setSelectedState] = useState(0);
+  const [selectedDistrict, setSelectedDistrict] = useState(0);
+  const [stateList, setStateList] = useState<STATE[]>([]);
+  const [districtList, setDistrictList] = useState<DISTRICT[]>([]);
 
   useEffect(() => {
     getUserAgePreference().then(age => {
@@ -103,6 +119,22 @@ export const SettingsScreen = () => {
         setSelectedFeeType(newType);
       }
     });
+    getUserStateIdPreference().then(st => {
+      if (st) {
+        setSelectedState(st);
+        getDistricts(st).then(dList => {
+          if (dList) {
+            setDistrictList(dList);
+          }
+        });
+      }
+      setStateList(STATES);
+    });
+    getUserDistrictIdPreference().then(dt => {
+      if (dt) {
+        setSelectedDistrict(+dt);
+      }
+    });
   }, []);
 
   const onAgeFilterChange = (key: string) => {
@@ -117,9 +149,8 @@ export const SettingsScreen = () => {
     if (key !== VaccineType[selectedVaccine]) {
       const newType = VaccineType[key as keyof typeof VaccineType];
       setSelectedVaccine(newType);
+      saveUserVaccinePreference(VaccineType[newType]);
     }
-    console.log(selectedVaccine);
-    saveUserVaccinePreference(VaccineType[selectedVaccine]);
   };
 
   const onDoseChange = (key: string) => {
@@ -137,62 +168,133 @@ export const SettingsScreen = () => {
     }
   };
 
+  const onStateChange = (index: number) => {
+    const currentState = stateList[index];
+    setSelectedState(currentState.state_id);
+    setDistrictList([]);
+    // Get District
+    getDistricts(currentState.state_id).then(dList => {
+      if (dList) {
+        setDistrictList(dList);
+      }
+    });
+    saveUserStateIdPreference(currentState.state_id);
+    saveUserStatePreference(currentState.state_name);
+  };
+
+  const onDistrictChange = (index: number) => {
+    const currentDistrict = districtList[index];
+    setSelectedDistrict(currentDistrict.district_id);
+    saveUserDistrictIdPreference(currentDistrict.district_id);
+    saveUserDistrictPreference(currentDistrict.district_name);
+  };
+
   return (
     <View style={Styles.container}>
       {selectedBens.length > 0 ? (
-        <View style={{padding: 16}}>
+        <View>
           <Text>Booking For:</Text>
           {renderBeneficiary(selectedBens)}
         </View>
       ) : null}
-      <Text>
-        Below settings would be used to make it faster to book the slot whenever
-        available!
-      </Text>
-      <View>
-        <Text>Select Dose</Text>
-        <View style={Styles.radioContainer}>
-          <RadioButton
-            key={selectedDose}
-            selectedKey={selectedDose.toString()}
-            options={DoseChoices}
-            onChange={onDoseChange}
-          />
+      <ScrollView>
+        <Text>
+          Below settings would be used to make it faster to book the slot
+          whenever available!
+        </Text>
+        <View>
+          <Text>Select Dose</Text>
+          <View style={Styles.radioContainer}>
+            <RadioButton
+              key={selectedDose}
+              selectedKey={selectedDose.toString()}
+              options={DoseChoices}
+              onChange={onDoseChange}
+            />
+          </View>
         </View>
-      </View>
-      <View>
-        <Text>Select Vaccine</Text>
-        <View style={Styles.radioContainer}>
-          <RadioButton
-            key={selectedVaccine}
-            selectedKey={VaccineType[selectedVaccine]}
-            options={AvailableVaccineTypes}
-            onChange={onVaccineChange}
-          />
+        <View>
+          <Text>Select Vaccine</Text>
+          <View style={Styles.radioContainer}>
+            <RadioButton
+              key={selectedVaccine}
+              selectedKey={VaccineType[selectedVaccine]}
+              options={AvailableVaccineTypes}
+              onChange={onVaccineChange}
+            />
+          </View>
         </View>
-      </View>
-      <View>
-        <Text>Select Age group to get Alerts</Text>
-        <View style={Styles.radioContainer}>
-          <RadioButton
-            key={ageFilter}
-            selectedKey={ageFilter}
-            options={AgeFilters}
-            onChange={onAgeFilterChange}
-          />
+        <View>
+          <Text>Select Age group to get Alerts</Text>
+          <View style={Styles.radioContainer}>
+            <RadioButton
+              key={ageFilter}
+              selectedKey={ageFilter}
+              options={AgeFilters}
+              onChange={onAgeFilterChange}
+            />
+          </View>
         </View>
-      </View>
-      <View>
-        <Text>Select Fee Type</Text>
-        <View style={Styles.radioContainer}>
-          <RadioButton
-            key={selectedFeeType}
-            selectedKey={FeeType[selectedFeeType]}
-            options={FeeTypeChoices}
-            onChange={onFeeTypeChange}
-          />
+        <View>
+          <Text>Select Fee Type</Text>
+          <View style={Styles.radioContainer}>
+            <RadioButton
+              key={selectedFeeType}
+              selectedKey={FeeType[selectedFeeType]}
+              options={FeeTypeChoices}
+              onChange={onFeeTypeChange}
+            />
+          </View>
         </View>
-      </View>
+        <View>
+          <Text>Select State</Text>
+          <View style={Styles.pickerContainer}>
+            <Picker
+              key={selectedState}
+              mode="dropdown"
+              testID="state-picker"
+              selectedValue={selectedState}
+              onValueChange={(itemValue, itemIndex) =>
+                onStateChange(itemIndex)
+              }>
+              {stateList.map(i => {
+                return (
+                  <Picker.Item
+                    key={i.state_id}
+                    label={i.state_name}
+                    value={i.state_id}
+                  />
+                );
+              })}
+            </Picker>
+          </View>
+        </View>
+        {districtList.length > 0 ? (
+          <View>
+            <Text>Select District</Text>
+            <View style={Styles.pickerContainer}>
+              <Picker
+                key={selectedDistrict}
+                mode="dropdown"
+                testID="district-picker"
+                selectedValue={selectedDistrict}
+                onValueChange={(itemValue, itemIndex) =>
+                  onDistrictChange(itemIndex)
+                }>
+                {districtList.map(i => {
+                  return (
+                    <Picker.Item
+                      key={i.district_id}
+                      label={i.district_name}
+                      value={i.district_id}
+                    />
+                  );
+                })}
+              </Picker>
+            </View>
+          </View>
+        ) : null}
+      </ScrollView>
     </View>
   );
 };
@@ -207,5 +309,9 @@ const Styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingTop: 8,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#808080',
   },
 });

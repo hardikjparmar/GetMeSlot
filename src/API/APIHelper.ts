@@ -9,11 +9,13 @@ import {
   bookAppointment as bookAppointmentUrl,
   getCaptcha as getCaptchaUrl,
   cancelAppointment,
+  getDistricts as getDistrictsUrl,
 } from './APIEndpoints';
 import {removeCredentials} from '../Storage/LocalStorage';
 import {Center} from '../Types/SlotTypes';
 import Navigator from '../Navigation/RootNavigation';
 import {Beneficiary} from '../Types/BeneficiaryTypes';
+import {DISTRICT} from '../Constants/Constants';
 
 let api = axios.create({
   baseURL: baseUrl,
@@ -130,16 +132,31 @@ export const getSlots = async (
     };
   }
   count += 1;
+  console.log('DistrictId: ' + districtId);
+  console.log('date: ' + date);
+  console.log('token: ' + token);
+  console.log('vaccine: ' + vaccine);
+
+  let headers: any;
+  if (token === '') {
+    headers = {
+      accept: 'application/json',
+      'Content-Type': 'application/json',
+      'Accept-Language': 'hi_IN',
+    };
+  } else {
+    headers = {
+      accept: 'application/json',
+      'Content-Type': 'application/json',
+      'Accept-Language': 'hi_IN',
+      Authorization: `Bearer ${token}`,
+    };
+  }
   try {
     const response = await api({
       url: getSlotUrl,
       method: 'get',
-      headers: {
-        accept: 'application/json',
-        'Content-Type': 'application/json',
-        'Accept-Language': 'hi_IN',
-        Authorization: `Bearer ${token}`,
-      },
+      headers: headers,
       params: params,
     });
 
@@ -202,9 +219,6 @@ export const getCaptcha = async (token: string) => {
   return undefined;
 };
 
-/**
- * curl -X POST "https://api.demo.co-vin.in/api/v2/appointment/schedule" -H "accept: application/json" -H "Content-Type: application/json" -H "x-api-key: 3sjOr2rmM52GzhpMHjDEE1kpQeRxwFDr4YcBEimi" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiI2OTRkNmQ3MS0wY2FiLTRjNGMtYTk2Ni02NjRlZDRjNTc1NjEiLCJ1c2VyX2lkIjoiNjk0ZDZkNzEtMGNhYi00YzRjLWE5NjYtNjY0ZWQ0YzU3NTYxIiwidXNlcl90eXBlIjoiQkVORUZJQ0lBUlkiLCJtb2JpbGVfbnVtYmVyIjo5NzI2MTg0ODM3LCJiZW5lZmljaWFyeV9yZWZlcmVuY2VfaWQiOjIxMzk1NzA3Njg1NDIyLCJzZWNyZXRfa2V5IjoiYjVjYWIxNjctNzk3Ny00ZGYxLTgwMjctYTYzYWExNDRmMDRlIiwidWEiOiJNb3ppbGxhLzUuMCAoTWFjaW50b3NoOyBJbnRlbCBNYWMgT1MgWCAxMF8xMF8xKSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMzkuMC4yMTcxLjk1IFNhZmFyaS81MzcuMzYiLCJkYXRlX21vZGlmaWVkIjoiMjAyMS0wNS0wOVQxNDoyMzo0MS4yNTVaIiwiaWF0IjoxNjIwNTcwMjIxLCJleHAiOjE2MjA1NzExMjF9.NV65xMZJFZg7vTcwHH8FSdMZF0qbM7-sCW3Gfo3YUvc" -d "{\"dose\":1,\"session_id\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\"slot\":\"FORENOON\",\"beneficiaries\":[\"1234567890123\",\"9876543210987\"]}"
- */
 export const bookAppointment = async (
   token: string,
   dose: number,
@@ -273,6 +287,27 @@ export const cancelBooking = async (
     }
   } catch (error) {
     console.error(`ERRPR: ${error}`);
+  }
+  return undefined;
+};
+
+export const getDistricts = async (
+  stateId: number,
+): Promise<DISTRICT[] | undefined> => {
+  try {
+    const response = await api({
+      url: getDistrictsUrl + '/' + stateId,
+      method: 'get',
+      headers: {
+        accept: 'application/json',
+        'Accept-Language': 'hi_IN',
+      },
+    });
+    if (response) {
+      return response.data.districts;
+    }
+  } catch (error) {
+    console.error(`ERROR: ${error}`);
   }
   return undefined;
 };

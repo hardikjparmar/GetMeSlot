@@ -106,3 +106,57 @@ export const getUserFeeTypePreference = async (): Promise<
   }
   return undefined;
 };
+
+export const saveUserStateIdPreference = async (stateId: number) => {
+  AsyncStorage.setItem('UserStateIdPreference', stateId.toString());
+};
+
+export const getUserStateIdPreference = async (): Promise<
+  number | undefined
+> => {
+  const statePref = await AsyncStorage.getItem('UserStateIdPreference');
+  if (statePref) {
+    return +statePref;
+  }
+  return undefined;
+};
+
+export const saveUserStatePreference = async (state: string) => {
+  AsyncStorage.setItem('UserStatePreference', state);
+};
+
+export const getUserStatePreference = async (): Promise<string | undefined> => {
+  const statePref = await AsyncStorage.getItem('UserStatePreference');
+  if (statePref) {
+    return statePref;
+  }
+  return undefined;
+};
+
+export const saveUserDistrictIdPreference = async (districtId: number) => {
+  AsyncStorage.setItem('UserDistrictIdPreference', districtId.toString());
+};
+
+export const getUserDistrictIdPreference = async (): Promise<
+  string | undefined
+> => {
+  const districtPref = await AsyncStorage.getItem('UserDistrictIdPreference');
+  if (districtPref) {
+    return districtPref;
+  }
+  return undefined;
+};
+
+export const saveUserDistrictPreference = async (fee: string) => {
+  AsyncStorage.setItem('UserDistrictePreference', fee);
+};
+
+export const getUserDistrictPreference = async (): Promise<
+  string | undefined
+> => {
+  const districtPref = await AsyncStorage.getItem('UserDistrictPreference');
+  if (districtPref) {
+    return districtPref;
+  }
+  return undefined;
+};
