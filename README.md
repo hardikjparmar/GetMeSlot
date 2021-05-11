@@ -20,3 +20,19 @@ PS: The notification service works on Android only!
 <img src="/screenshots/5.%20Beneficiary%20List.png" alt="Beneficiary List Screen" width="200"/>
 <img src="/screenshots/6.%20Settings.png" alt="Settings Screen" width="200"/>
 </p>
+
+## Download APK
+
+Download the Latest APK from [HERE](https://github.com/hardikjparmar/GetMeSlot/releases/download/v1.1/GetMeSlot-v1.1.apk)!
+
+## APIs
+
+We are using [Co-Win](https://apisetu.gov.in/public/marketplace/api/cowin/)'s APIs.
+
+## Contribute
+
+Contributions are highly apprecieated! You can suggest/contribte for the features that can make the app more useful! 
+
+## License
+
+[MIT LICENSE](LICENSE)
