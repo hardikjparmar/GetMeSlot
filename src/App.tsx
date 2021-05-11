@@ -48,7 +48,7 @@ import {
 } from './Storage/LocalStorage';
 import {BookingScreen} from './Components/BookingScreen/BookingScreen';
 
-const CHANNEL_ID = 'SLOT_AVAILABLE';
+const CHANNEL_ID = 'NEW_SLOT_AVAILABLE';
 
 PushNotification.configure({
   // (required) Called when a remote is received or opened, or local notification is opened
@@ -66,11 +66,12 @@ PushNotification.configure({
 PushNotification.createChannel(
   {
     channelId: CHANNEL_ID, // (required)
-    channelName: 'GetMeSlot Slot Available', // (required)
+    channelName: 'Slot Available', // (required)
     channelDescription: 'Slot Available', // (optional) default: undefined.
     playSound: true,
-    soundName: 'default',
+    soundName: 'notification_tone.mp3',
     vibrate: true,
+    importance: 5,
   },
   created => console.log(`createChannel returned '${created}'`), // (optional) callback returns whether the channel was created, false means it already existed.
 );
@@ -97,13 +98,15 @@ const App = () => {
       channelId: CHANNEL_ID,
       message: 'Slots available! Hurry up!',
       playSound: true,
-      soundName: 'default',
+      soundName: 'notification_tone.mp3',
       importance: 'high',
       priority: 'high',
       vibrate: true,
       vibration: 1000,
       showWhen: true,
       when: Date.now(),
+      smallIcon: 'ic_stat_getmeslot',
+      largeIcon: '',
     });
   };
 

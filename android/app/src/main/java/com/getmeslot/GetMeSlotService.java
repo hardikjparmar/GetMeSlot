@@ -17,7 +17,7 @@ import com.facebook.react.HeadlessJsTaskService;
 public class GetMeSlotService extends Service {
 
     private static final int SERVICE_NOTIFICATION_ID = 12345;
-    private static final String CHANNEL_ID = "GETMESLOT";
+    private static final String CHANNEL_ID = "GETMESLOTRUNNER";
 
     private Handler handler = new Handler();
     private Runnable runnableCode = new Runnable() {
@@ -35,8 +35,9 @@ public class GetMeSlotService extends Service {
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "GETMESLOT", importance);
-            channel.setDescription("CHANEL DESCRIPTION");
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "GetMeSlot", importance);
+            channel.setDescription("Slot finder service notifier");
+            channel.setSound(null, null);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
@@ -66,11 +67,12 @@ public class GetMeSlotService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("GetMeSlot service")
-                .setContentText("Running...")
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("GetMeSlot")
+                .setContentText("Trying to find a slot...")
+                .setSmallIcon(R.drawable.ic_stat_getmeslot)
                 .setContentIntent(contentIntent)
                 .setOngoing(true)
+                .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND | Notification.FLAG_SHOW_LIGHTS)
                 .build();
         startForeground(SERVICE_NOTIFICATION_ID, notification);
         return START_STICKY;
