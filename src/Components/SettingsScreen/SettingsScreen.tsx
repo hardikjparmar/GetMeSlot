@@ -8,7 +8,6 @@ import {
   DISTRICT,
   DoseChoices,
   FeeTypeChoices,
-  minAge,
   STATE,
   STATES,
 } from '../../Constants/Constants';
@@ -32,6 +31,7 @@ import {RadioButton} from '../RadioButton/RadioButton';
 import {renderBeneficiary} from '../SlotListScreen/SlotListScreen';
 import {ScrollView} from 'react-native-gesture-handler';
 import {getDistricts} from '../../API/APIHelper';
+import {useSlots} from '../../App';
 
 type SettingsScreenRouteProp = RouteProp<RootStackParamList, 'SettingsScreen'>;
 
@@ -82,17 +82,23 @@ export namespace AgeGroup {
 
 export const SettingsScreen = () => {
   const route = useRoute<SettingsScreenRouteProp>();
+  const {
+    ageFilter,
+    setAgeFilter,
+    selectedVaccine,
+    setSelectedVaccine,
+    selectedDistrict,
+    setSelectedDistrict,
+    selectedState,
+    setSelectedState,
+    selectedDose,
+    setSelectedDose,
+    selectedFeeType,
+    setSelectedFeeType,
+  } = useSlots();
 
   const selectedBens = route.params.beneficiaries;
 
-  const [selectedDose, setSelectedDose] = useState(1);
-  const [selectedVaccine, setSelectedVaccine] = useState<VaccineType>(
-    VaccineType.COVISHIELD,
-  );
-  const [ageFilter, setAgeFilter] = useState(minAge.toString());
-  const [selectedFeeType, setSelectedFeeType] = useState(FeeType.BOTH);
-  const [selectedState, setSelectedState] = useState(0);
-  const [selectedDistrict, setSelectedDistrict] = useState(0);
   const [stateList, setStateList] = useState<STATE[]>([]);
   const [districtList, setDistrictList] = useState<DISTRICT[]>([]);
 

@@ -81,17 +81,49 @@ const Stack = createStackNavigator<RootStackParamList>();
 type SlotContextType = {
   centers: Center[];
   setCenters: (centers: Center[]) => void;
+  ageFilter: string;
+  setAgeFilter: (age: string) => void;
+  selectedVaccine: VaccineType;
+  setSelectedVaccine: (vaccine: VaccineType) => void;
+  selectedFeeType: FeeType;
+  setSelectedFeeType: (fee: FeeType) => void;
+  selectedState: number;
+  setSelectedState: (state: number) => void;
+  selectedDistrict: number;
+  setSelectedDistrict: (district: number) => void;
+  selectedDose: number;
+  setSelectedDose: (dose: number) => void;
 };
 
 const SlotContext = createContext<SlotContextType>({
   centers: [],
   setCenters: (centers: Center[]) => console.warn('No setter'),
+  ageFilter: '',
+  setAgeFilter: (age: string) => console.warn('No setter'),
+  selectedVaccine: VaccineType.COVISHIELD,
+  setSelectedVaccine: (vaccine: VaccineType) => console.warn('No setter'),
+  selectedFeeType: FeeType.BOTH,
+  setSelectedFeeType: (fee: FeeType) => console.warn('No setter'),
+  selectedState: 0,
+  setSelectedState: (state: number) => console.warn('No setter'),
+  selectedDistrict: 0,
+  setSelectedDistrict: (district: number) => console.warn('No setter'),
+  selectedDose: 1,
+  setSelectedDose: (dose: number) => console.warn('No setter'),
 });
 
 export const useSlots = () => useContext(SlotContext);
 
 const App = () => {
   const [centers, setCenters] = useState<Array<Center>>([]);
+  const [ageFilter, setAgeFilter] = useState(minAge.toString());
+  const [selectedVaccine, setSelectedVaccine] = useState<VaccineType>(
+    VaccineType.COVISHIELD,
+  );
+  const [selectedFeeType, setSelectedFeeType] = useState(FeeType.BOTH);
+  const [selectedState, setSelectedState] = useState(0);
+  const [selectedDistrict, setSelectedDistrict] = useState(0);
+  const [selectedDose, setSelectedDose] = useState(1);
 
   const alert = () => {
     PushNotification.localNotification({
@@ -129,21 +161,27 @@ const App = () => {
       if (age) {
         preferredAge = age;
       }
+      setAgeFilter(preferredAge.toString());
       console.log('Preferred Age: ' + preferredAge);
       let preferredVaccine = VACCINE_PREF;
       if (vaccine) {
         preferredVaccine = vaccine;
       }
+      setSelectedVaccine(
+        VaccineType[preferredVaccine as keyof typeof VaccineType],
+      );
       console.log('Preferred Vaccine: ' + preferredVaccine);
       let preferredFees = FEE_PREF;
       if (fee) {
         preferredFees = fee;
       }
+      setSelectedFeeType(FeeType[preferredFees as keyof typeof FeeType]);
       console.log('Preferred Fee: ' + preferredFees);
       let preferredDistrictId = DISTRICT_ID_PREF;
       if (disId) {
         preferredDistrictId = disId;
       }
+      setSelectedDistrict(+preferredDistrictId);
       console.log('Preferred District: ' + preferredDistrictId);
       const vaccineParam =
         preferredVaccine !== VaccineType[VaccineType.BOTH]
@@ -177,7 +215,23 @@ const App = () => {
   }, []);
 
   return (
-    <SlotContext.Provider value={{centers, setCenters}}>
+    <SlotContext.Provider
+      value={{
+        centers,
+        setCenters,
+        ageFilter,
+        setAgeFilter,
+        selectedVaccine,
+        setSelectedVaccine,
+        selectedFeeType,
+        setSelectedFeeType,
+        selectedState,
+        setSelectedState,
+        selectedDistrict,
+        setSelectedDistrict,
+        selectedDose,
+        setSelectedDose,
+      }}>
       <NavigationContainer ref={Navigator.setContainer}>
         <Stack.Navigator>
           {/* SplashScreen which will come once for 5 Seconds */}
@@ -211,7 +265,7 @@ const App = () => {
           <Stack.Screen
             name="SettingsScreen"
             component={SettingsScreen}
-            options={{headerShown: true, title: 'Settings'}}
+            options={{headerShown: true, title: 'Filters & Settings'}}
           />
           <Stack.Screen
             name="BookingScreen"

@@ -13,25 +13,11 @@ import {
 } from 'react-native';
 
 import {CenterListItem} from '../CenterListItem/CenterListItem';
-import {
-  checkUserStatus,
-  getBeneficiaryList,
-  getUserAgePreference,
-  getUserDistrictIdPreference,
-  getUserVaccinePreference,
-} from '../../Storage/LocalStorage';
-import {RadioButton} from '../RadioButton/RadioButton';
+import {checkUserStatus, getBeneficiaryList} from '../../Storage/LocalStorage';
 import {RootStackParamList} from './../../Navigation/RootStackParams';
 import {SessionListItem} from '../SessionListItem/SessionListItem';
 import {Center, Session} from '../../Types/SlotTypes';
 import {today} from '../../DateHelper/DateHelper';
-import {
-  AgeFilters,
-  AvailableVaccineTypes,
-  DISTRICT_ID_PREF,
-  FeeTypeChoices,
-  minAge,
-} from '../../Constants/Constants';
 import {Beneficiary} from '../../Types/BeneficiaryTypes';
 import {useSlots} from '../../App';
 import {AgeGroup, FeeType, VaccineType} from '../SettingsScreen/SettingsScreen';
@@ -50,7 +36,13 @@ export const renderBeneficiary = (selectedBens: Beneficiary[]) => {
 };
 
 const SlotListScreen = () => {
-  const {centers} = useSlots();
+  const {
+    centers,
+    ageFilter,
+    selectedDistrict,
+    selectedFeeType,
+    selectedVaccine,
+  } = useSlots();
 
   const navigation = useNavigation<SlotListScreenNavigationProp>();
   const route = useRoute<SlotListScreenRouteProp>();
@@ -59,15 +51,7 @@ const SlotListScreen = () => {
   const [dataList, setDataList] = useState<Array<Center>>([]);
   const [displayList, setDisplayList] = useState<Array<Center>>([]);
   const [isFetching, setIsFetching] = useState(false);
-  const [ageFilter, setAgeFilter] = useState(minAge.toString());
   const [selectedBens, setSelectedBens] = useState<Array<Beneficiary>>([]);
-  const [selectedVaccine, setSelectedVaccine] = useState<VaccineType>(
-    VaccineType.BOTH,
-  );
-  const [selectedFeeType, setSelectedFeeType] = useState(FeeType.BOTH);
-  const [prefDistrictId, setPrefDistrictId] = useState<string>(
-    DISTRICT_ID_PREF,
-  );
 
   useLayoutEffect(() => {
     checkUserStatus().then(cred => {
@@ -93,39 +77,7 @@ const SlotListScreen = () => {
 
   useEffect(() => {
     getSavedBeneficiaryList();
-    const promise = Promise.all([
-      getUserAgePreference(),
-      getUserVaccinePreference(),
-      getUserDistrictIdPreference(),
-    ]);
-    promise.then(([age, vaccineString, disId]) => {
-      if (age) {
-        setAgeFilter(age.toString());
-      }
-      if (vaccineString) {
-        const newType = VaccineType[vaccineString as keyof typeof VaccineType];
-        setSelectedVaccine(newType);
-      }
-      let pDistrictId = prefDistrictId;
-      if (disId) {
-        pDistrictId = disId;
-        setPrefDistrictId(pDistrictId);
-      }
-      getSlotsConsumer(pDistrictId, today());
-    });
   }, []);
-
-  // const cancelBookingConsumer = (selectedBens: Beneficiary[]) => {
-  //   cancelBooking(
-  //     token,
-  //     'f979864c-bde9-4871-a755-918554998ceb',
-  //     selectedBens.map(i => i.beneficiary_reference_id),
-  //   ).then(res => {
-  //     if (res) {
-  //       console.log('Cancelled Booking');
-  //     }
-  //   });
-  // };
 
   useEffect(() => {
     setDataList(centers);
@@ -136,7 +88,6 @@ const SlotListScreen = () => {
     getBeneficiaryList().then(benList => {
       if (benList) {
         setSelectedBens(benList);
-        // cancelBookingConsumer(benList);
       }
     });
   };
@@ -181,13 +132,10 @@ const SlotListScreen = () => {
 
   const onRefresh = () => {
     setIsFetching(true);
-    getSlotsConsumer('' + prefDistrictId, today());
+    getSlotsConsumer(selectedDistrict.toString(), today());
   };
 
   const onAgeFilterChange = (key: string) => {
-    if (key !== ageFilter) {
-      setAgeFilter(key);
-    }
     const minAge = AgeGroup.minAge(AgeGroup.group(key));
     const filteredList = dataList.filter(item => {
       return (
@@ -202,20 +150,6 @@ const SlotListScreen = () => {
       );
     });
     setDisplayList(filteredList);
-  };
-
-  const onVaccineChange = (key: string) => {
-    if (key !== VaccineType[selectedVaccine]) {
-      const newType = VaccineType[key as keyof typeof VaccineType];
-      setSelectedVaccine(newType);
-    }
-  };
-
-  const onFeeTypeChange = (key: string) => {
-    if (key !== FeeType[selectedFeeType]) {
-      const newType = FeeType[key as keyof typeof FeeType];
-      setSelectedFeeType(newType);
-    }
   };
 
   const onSessionSelected = (session: Session) => {
@@ -239,7 +173,7 @@ const SlotListScreen = () => {
   const onBeneficiarySelected = (beneficiary: Array<Beneficiary>) => {
     setSelectedBens(beneficiary);
     setIsFetching(true);
-    getSlotsConsumer('' + prefDistrictId, today());
+    getSlotsConsumer(selectedDistrict.toString(), today());
   };
 
   const onSettingsPressed = () => {
@@ -254,34 +188,6 @@ const SlotListScreen = () => {
           {renderBeneficiary(selectedBens)}
         </View>
       ) : null}
-      <Text style={{paddingStart: 16}}>Filters:</Text>
-      <View style={ListStyles.filterContainer}>
-        <Text style={{paddingStart: 16}}>Age:</Text>
-        <RadioButton
-          key={ageFilter}
-          selectedKey={ageFilter}
-          options={AgeFilters}
-          onChange={onAgeFilterChange}
-        />
-      </View>
-      <View style={ListStyles.filterContainer}>
-        <Text style={{paddingStart: 16}}>Vaccine:</Text>
-        <RadioButton
-          key={selectedVaccine}
-          selectedKey={VaccineType[selectedVaccine]}
-          options={AvailableVaccineTypes}
-          onChange={onVaccineChange}
-        />
-      </View>
-      <View style={ListStyles.filterContainer}>
-        <Text style={{paddingStart: 16}}>Fees:</Text>
-        <RadioButton
-          key={selectedFeeType}
-          selectedKey={FeeType[selectedFeeType]}
-          options={FeeTypeChoices}
-          onChange={onFeeTypeChange}
-        />
-      </View>
       <SectionList
         sections={displayList}
         keyExtractor={(item, index) => item.session_id.toString() + index}
@@ -316,7 +222,7 @@ const SlotListScreen = () => {
         <Image
           style={ListStyles.floatingImage}
           resizeMethod="resize"
-          resizeMode="contain"
+          resizeMode="center"
           source={require('./../../Assets/settings_icon.png')}
         />
       </TouchableOpacity>
