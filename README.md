@@ -23,7 +23,7 @@ PS: The notification service works on Android only!
 
 ## Download APK
 
-Download the Latest APK from [HERE](https://github.com/hardikjparmar/GetMeSlot/releases/download/v1.1/GetMeSlot-v1.1.apk)!
+Download the Latest APK from [HERE](https://github.com/hardikjparmar/GetMeSlot/releases/download/v1.3/GetMeSlot-v1.3.apk)!
 
 ## APIs
 
@@ -36,3 +36,7 @@ Contributions are highly apprecieated! You can suggest/contribte for the feature
 ## License
 
 [MIT LICENSE](LICENSE)
+
+## Image Credits
+
+App icon and filter icon image credits to [Stockio.com](stockio.com)
