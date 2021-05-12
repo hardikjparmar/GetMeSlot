@@ -41,6 +41,7 @@ import {
   VaccineType,
 } from './Components/SettingsScreen/SettingsScreen';
 import {
+  checkUserStatus,
   getUserAgePreference,
   getUserDistrictIdPreference,
   getUserFeeTypePreference,
@@ -148,65 +149,58 @@ const App = () => {
     const vaccinePromise = getUserVaccinePreference();
     const feePromise = getUserFeeTypePreference();
     const districtIdPromise = getUserDistrictIdPreference();
+    const tokenPromise = checkUserStatus();
 
     const allPromise = Promise.all([
       agePromise,
       vaccinePromise,
       feePromise,
       districtIdPromise,
+      tokenPromise,
     ]);
 
-    allPromise.then(([age, vaccine, fee, disId]) => {
-      let preferredAge = minAge;
-      if (age) {
-        preferredAge = age;
-      }
+    allPromise.then(([age, vaccine, fee, disId, token]) => {
+      let preferredAge = age ? age : minAge;
       setAgeFilter(preferredAge.toString());
       console.log('Preferred Age: ' + preferredAge);
-      let preferredVaccine = VACCINE_PREF;
-      if (vaccine) {
-        preferredVaccine = vaccine;
-      }
+      let preferredVaccine = vaccine ? vaccine : VACCINE_PREF;
       setSelectedVaccine(
         VaccineType[preferredVaccine as keyof typeof VaccineType],
       );
       console.log('Preferred Vaccine: ' + preferredVaccine);
-      let preferredFees = FEE_PREF;
-      if (fee) {
-        preferredFees = fee;
-      }
+      let preferredFees = fee ? fee : FEE_PREF;
       setSelectedFeeType(FeeType[preferredFees as keyof typeof FeeType]);
       console.log('Preferred Fee: ' + preferredFees);
-      let preferredDistrictId = DISTRICT_ID_PREF;
-      if (disId) {
-        preferredDistrictId = disId;
-      }
+      let preferredDistrictId = disId ? disId : DISTRICT_ID_PREF;
       setSelectedDistrict(+preferredDistrictId);
       console.log('Preferred District: ' + preferredDistrictId);
+      let currentToken = token ? token : '';
       const vaccineParam =
         preferredVaccine !== VaccineType[VaccineType.BOTH]
           ? preferredVaccine
           : undefined;
-      getSlots(preferredDistrictId, today(), '', vaccineParam).then(res => {
-        if (res) {
-          setCenters(res);
-          const filteredList = res.filter(item => {
-            return (
-              item.sessions.filter(
-                session =>
-                  session.available_capacity > 0 &&
-                  session.min_age_limit === preferredAge,
-              ).length > 0 &&
-              (preferredFees !== FeeType[FeeType.BOTH]
-                ? item.fee_type.toLowerCase() === preferredFees.toLowerCase()
-                : true)
-            );
-          });
-          if (filteredList.length > 0) {
-            alert();
+      getSlots(preferredDistrictId, today(), currentToken, vaccineParam).then(
+        res => {
+          if (res) {
+            setCenters(res);
+            const filteredList = res.filter(item => {
+              return (
+                item.sessions.filter(
+                  session =>
+                    session.available_capacity > 0 &&
+                    session.min_age_limit === preferredAge,
+                ).length > 0 &&
+                (preferredFees !== FeeType[FeeType.BOTH]
+                  ? item.fee_type.toLowerCase() === preferredFees.toLowerCase()
+                  : true)
+              );
+            });
+            if (filteredList.length > 0) {
+              alert();
+            }
           }
-        }
-      });
+        },
+      );
     });
   };
 

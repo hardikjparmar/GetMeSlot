@@ -2,14 +2,43 @@ import Keychain from 'react-native-keychain';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Beneficiary} from '../Types/BeneficiaryTypes';
 
+const setLoggedInTime = async (date: string) => {
+  await AsyncStorage.setItem('LoginTimestamp', date);
+};
+
+const getLoggedInTime = async (): Promise<number | undefined> => {
+  try {
+    const time = await AsyncStorage.getItem('LoginTimestamp');
+    if (time) {
+      return +time;
+    }
+  } catch (error) {
+    console.log("Keychain couldn't be accessed!", error);
+  }
+  return undefined;
+};
+
 export const setCredentials = async (mobile: string, token: string) => {
-  await Keychain.setGenericPassword(mobile, token);
+  try {
+    const cred = await Keychain.setGenericPassword(mobile, token);
+    if (cred) {
+      setLoggedInTime(Date.now().toString());
+    }
+  } catch (error) {
+    console.log("Keychain couldn't be accessed!", error);
+  }
 };
 
 export const checkUserStatus = async (): Promise<string | undefined> => {
   try {
     const credentials = await Keychain.getGenericPassword();
-    if (credentials) {
+    const loginTimestamp = await getLoggedInTime();
+    console.log('Now: ' + Date.now() + ' Past: ' + loginTimestamp);
+    if (
+      credentials &&
+      loginTimestamp &&
+      Date.now() - loginTimestamp <= 15 * 60 * 1000
+    ) {
       return credentials.password;
     }
   } catch (error) {

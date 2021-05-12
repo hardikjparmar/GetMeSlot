@@ -5,6 +5,7 @@ import {
   confirmOTP,
   generateOTP,
   getSlots as getSlotUrl,
+  getSlotsProtected as getSlotsProtectedUrl,
   getBeneficieryDetails as getBeneficieryDetailsUrl,
   bookAppointment as bookAppointmentUrl,
   getCaptcha as getCaptchaUrl,
@@ -138,12 +139,14 @@ export const getSlots = async (
   console.log('vaccine: ' + vaccine);
 
   let headers: any;
+  let url = getSlotUrl;
   if (token === '') {
     headers = {
       accept: 'application/json',
       'Content-Type': 'application/json',
       'Accept-Language': 'hi_IN',
     };
+    url = getSlotUrl;
   } else {
     headers = {
       accept: 'application/json',
@@ -151,10 +154,12 @@ export const getSlots = async (
       'Accept-Language': 'hi_IN',
       Authorization: `Bearer ${token}`,
     };
+    url = getSlotsProtectedUrl;
   }
+  console.log(`Slot url: ${url}`);
   try {
     const response = await api({
-      url: getSlotUrl,
+      url: url,
       method: 'get',
       headers: headers,
       params: params,
