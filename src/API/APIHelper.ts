@@ -252,6 +252,9 @@ export const bookAppointment = async (
     });
     if (response) {
       console.log(response);
+      if (response.status === 409) {
+        return `This vaccination center is completely booked for the selected date.`;
+      }
       return response.data.appointment_confirmation_no;
     }
   } catch (error) {

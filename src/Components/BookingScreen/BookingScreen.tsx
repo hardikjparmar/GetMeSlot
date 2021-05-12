@@ -1,11 +1,12 @@
 import {RouteProp, useRoute} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
-import {TextInput, View, StyleSheet, Button, Alert} from 'react-native';
+import {Text, TextInput, View, StyleSheet, Button, Alert} from 'react-native';
 import SvgUri from 'react-native-svg-uri';
 import {bookAppointment} from '../../API/APIHelper';
 import {getCaptcha} from '../../API/APIHelper';
 import {DOSE_PREF} from '../../Constants/Constants';
 import {RootStackParamList} from '../../Navigation/RootStackParams';
+import {renderBeneficiary} from '../SlotListScreen/SlotListScreen';
 
 type BookingScreenRouteProp = RouteProp<RootStackParamList, 'BookingScreen'>;
 
@@ -49,10 +50,14 @@ export const BookingScreen = () => {
       captchText,
     ).then(appointmentId => {
       if (appointmentId) {
-        Alert.alert(
-          'Congratulations!',
-          'Your slot is booked with Appointment ID: ' + appointmentId,
-        );
+        if (appointmentId.startsWith('Error:')) {
+          Alert.alert('Oops!', appointmentId);
+        } else {
+          Alert.alert(
+            'Congratulations!',
+            'Your slot is booked with Appointment ID: ' + appointmentId,
+          );
+        }
       } else {
         Alert.alert('Oops!', 'Sorry, we could not book that slot!');
       }
@@ -60,7 +65,13 @@ export const BookingScreen = () => {
   };
 
   return (
-    <View>
+    <View style={{flex: 1, padding: 16}}>
+      {selectedBens.length > 0 ? (
+        <View style={{paddingVertical: 16}}>
+          <Text>Booking For:</Text>
+          {renderBeneficiary(selectedBens)}
+        </View>
+      ) : null}
       {nCaptcha.length > 0 ? (
         <SvgUri width="150" height="50" svgXmlData={nCaptcha} />
       ) : null}
@@ -71,8 +82,12 @@ export const BookingScreen = () => {
         onChangeText={setCaptchText}
         value={captchText}
       />
-      <Button onPress={onSubmitPressed} title="Submit Captcha and Book" />
-      <Button onPress={onRegenerateCaptcha} title="Refresh Captcha" />
+      <View style={{alignItems: 'center', marginTop: 16}}>
+        <Button onPress={onSubmitPressed} title="Submit Captcha and Book" />
+      </View>
+      <View style={{alignItems: 'center', marginTop: 16}}>
+        <Button onPress={onRegenerateCaptcha} title="Refresh Captcha" />
+      </View>
     </View>
   );
 };
