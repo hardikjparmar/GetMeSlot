@@ -163,8 +163,7 @@ export const SettingsScreen = () => {
     if (key !== selectedDose.toString()) {
       setSelectedDose(+key);
     }
-    console.log(selectedDose);
-    saveUserDosePreference(selectedDose);
+    saveUserDosePreference(+key);
   };
 
   const onFeeTypeChange = (key: string) => {

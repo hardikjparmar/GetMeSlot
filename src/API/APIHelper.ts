@@ -161,10 +161,12 @@ export const getSlots = async (
     });
 
     if (response) {
-      response.data.centers.forEach((element: Center) => {
-        element.data = element.sessions;
-      });
-      return response.data.centers;
+      if (response.data.centers) {
+        response.data.centers.forEach((element: Center) => {
+          element.data = element.sessions;
+        });
+        return response.data.centers;
+      }
     }
   } catch (error) {
     console.error(`ERROR: ${error}`);
