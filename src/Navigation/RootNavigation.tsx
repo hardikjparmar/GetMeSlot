@@ -17,8 +17,16 @@ function reset() {
   });
 }
 
+function reAuth(mobile: string) {
+  navigationRef.reset({
+    index: 0,
+    routes: [{name: 'OTPScreen', params: {preFillMobileNumber: mobile}}],
+  });
+}
+
 export default {
   reset,
   navigate,
   setContainer,
+  reAuth,
 };

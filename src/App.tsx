@@ -33,7 +33,8 @@ import {
 import {today} from './DateHelper/DateHelper';
 import {getSlots} from './API/APIHelper';
 import PushNotification from 'react-native-push-notification';
-import {AppRegistry, Platform, PushNotificationIOS} from 'react-native';
+import {AppRegistry, Platform} from 'react-native';
+import PushNotificationIOS from '@react-native-community/push-notification-ios';
 import {Center} from './Types/SlotTypes';
 import {
   FeeType,
@@ -42,10 +43,13 @@ import {
 } from './Components/SettingsScreen/SettingsScreen';
 import {
   checkUserStatus,
+  getLastAuthAlertTime,
+  getMobileNumber,
   getUserAgePreference,
   getUserDistrictIdPreference,
   getUserFeeTypePreference,
   getUserVaccinePreference,
+  setLastAuthAlertTime,
 } from './Storage/LocalStorage';
 import {BookingScreen} from './Components/BookingScreen/BookingScreen';
 
@@ -57,9 +61,26 @@ PushNotification.configure({
     console.log('NOTIFICATION:', notification);
 
     // process the notification
-
+    if (
+      notification.action == 'Enter OTP' &&
+      notification.userInteraction &&
+      !notification.foreground
+    ) {
+      console.log('Enter OTP clicked!');
+      getMobileNumber().then(mobile => {
+        console.log('Saved Mobile Number: ', mobile);
+        if (mobile) {
+          Navigator.reAuth(mobile);
+        } else {
+          Navigator.reset();
+        }
+      });
+    }
     // (required) Called when a remote is received or opened, or local notification is opened
     notification.finish(PushNotificationIOS.FetchResult.NoData);
+  },
+  onAction: function (notification) {
+    console.log('Action: ', notification);
   },
   requestPermissions: Platform.OS === 'ios',
 });
@@ -143,6 +164,26 @@ const App = () => {
     });
   };
 
+  const getOTPNotification = () => {
+    PushNotification.localNotification({
+      channelId: CHANNEL_ID,
+      message: 'Enter OTP to continue getting latest updates for slots',
+      playSound: true,
+      soundName: 'notification_tone.mp3',
+      importance: 'high',
+      priority: 'high',
+      vibrate: true,
+      vibration: 1000,
+      showWhen: true,
+      when: Date.now(),
+      smallIcon: 'ic_stat_getmeslot',
+      largeIcon: '',
+      actions: ['Enter OTP'],
+      id: 123,
+      messageId: '123',
+    });
+  };
+
   const MyHeadlessTask = async () => {
     console.log('Receiving GetMeSlot in Index!');
     const agePromise = getUserAgePreference();
@@ -179,6 +220,19 @@ const App = () => {
         preferredVaccine !== VaccineType[VaccineType.BOTH]
           ? preferredVaccine
           : undefined;
+      if (token === undefined) {
+        console.log('token expired!!!');
+        getLastAuthAlertTime().then(time => {
+          if (
+            (time && Date.now() - time > 5 * 60 * 1000) ||
+            time === undefined
+          ) {
+            // 5 mins
+            getOTPNotification();
+            setLastAuthAlertTime(Date.now().toString());
+          }
+        });
+      }
       getSlots(preferredDistrictId, today(), currentToken, vaccineParam).then(
         res => {
           if (res) {

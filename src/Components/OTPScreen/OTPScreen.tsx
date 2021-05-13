@@ -25,9 +25,16 @@ const OTPScreen = () => {
 
   const txnId = route.params.txnId;
   const mobileNumber = route.params.mobileNumber;
+  const preFillMobileNumber = route.params.preFillMobileNumber;
   const [otp, setOtp] = useState('');
   const [shouldShowResendOption, setShouldShowResendOption] = useState(false);
   const [timer, setTimer] = useState(30);
+
+  useEffect(() => {
+    if (preFillMobileNumber) {
+      getOTPConsumer(preFillMobileNumber);
+    }
+  }, []);
 
   useEffect(() => {
     let t: NodeJS.Timeout | undefined;

@@ -18,9 +18,26 @@ const getLoggedInTime = async (): Promise<number | undefined> => {
   return undefined;
 };
 
+export const setLastAuthAlertTime = async (date: string) => {
+  await AsyncStorage.setItem('LastAuthAlertTimestamp', date);
+};
+
+export const getLastAuthAlertTime = async (): Promise<number | undefined> => {
+  try {
+    const time = await AsyncStorage.getItem('LastAuthAlertTimestamp');
+    if (time) {
+      return +time;
+    }
+  } catch (error) {
+    console.log("Keychain couldn't be accessed!", error);
+  }
+  return undefined;
+};
+
 export const setCredentials = async (mobile: string, token: string) => {
   try {
     const cred = await Keychain.setGenericPassword(mobile, token);
+    saveMobileNumber(mobile);
     if (cred) {
       setLoggedInTime(Date.now().toString());
     }
@@ -29,11 +46,26 @@ export const setCredentials = async (mobile: string, token: string) => {
   }
 };
 
+const saveMobileNumber = async (mobile: string) => {
+  await AsyncStorage.setItem('UserMobileNumber', mobile);
+};
+
+export const getMobileNumber = async (): Promise<string | undefined> => {
+  try {
+    const mobile = await AsyncStorage.getItem('UserMobileNumber');
+    if (mobile) {
+      return mobile;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+  return undefined;
+};
+
 export const checkUserStatus = async (): Promise<string | undefined> => {
   try {
     const credentials = await Keychain.getGenericPassword();
     const loginTimestamp = await getLoggedInTime();
-    console.log('Now: ' + Date.now() + ' Past: ' + loginTimestamp);
     if (
       credentials &&
       loginTimestamp &&

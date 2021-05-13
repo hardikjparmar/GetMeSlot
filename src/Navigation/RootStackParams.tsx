@@ -4,7 +4,11 @@ import {Session} from '../Types/SlotTypes';
 export type RootStackParamList = {
   SplashScreen: undefined;
   LoginScreen: undefined;
-  OTPScreen: {txnId: string; mobileNumber: string};
+  OTPScreen: {
+    txnId: string;
+    mobileNumber: string;
+    preFillMobileNumber?: string;
+  };
   SlotListScreen: {token: string};
   BeneficiaryListScreen: {
     token: string;
