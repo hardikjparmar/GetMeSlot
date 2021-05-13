@@ -16,9 +16,8 @@ PS: The notification service works on Android only!
 
 <p float="left">
 <img src="/screenshots/3.%20Slot%20List%20Screen.png" alt"Slot List Screen" width="200"/>
-<img src="/screenshots/4.%20Slot%20List%20Screen%20-%20Logged%20In%20State.png" alt="Slot List Screen - Logged In State" width="200"/>
-<img src="/screenshots/5.%20Beneficiary%20List.png" alt="Beneficiary List Screen" width="200"/>
 <img src="/screenshots/6.%20Settings.png" alt="Settings Screen" width="200"/>
+<img src="/screenshots/5.%20Beneficiary%20List.png" alt="Beneficiary List Screen" width="200"/>
 </p>
 
 ## Download APK
