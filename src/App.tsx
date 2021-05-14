@@ -53,7 +53,8 @@ import {
 } from './Storage/LocalStorage';
 import {BookingScreen} from './Components/BookingScreen/BookingScreen';
 
-const CHANNEL_ID = 'NEW_SLOT_AVAILABLE';
+const SLOT_CHANNEL_ID = 'NEW_SLOT_AVAILABLE';
+const AUTH_CHANNEL_ID = 'AUTH_EXPIRED';
 
 PushNotification.configure({
   // (required) Called when a remote is received or opened, or local notification is opened
@@ -87,9 +88,22 @@ PushNotification.configure({
 
 PushNotification.createChannel(
   {
-    channelId: CHANNEL_ID, // (required)
+    channelId: SLOT_CHANNEL_ID, // (required)
     channelName: 'Slot Available', // (required)
     channelDescription: 'Slot Available', // (optional) default: undefined.
+    playSound: true,
+    soundName: 'notification_tone.mp3',
+    vibrate: true,
+    importance: 5,
+  },
+  created => console.log(`createChannel returned '${created}'`), // (optional) callback returns whether the channel was created, false means it already existed.
+);
+
+PushNotification.createChannel(
+  {
+    channelId: AUTH_CHANNEL_ID, // (required)
+    channelName: 'Session Expired', // (required)
+    channelDescription: 'Login Session Expired, Authorise again!', // (optional) default: undefined.
     playSound: true,
     soundName: 'notification_tone.mp3',
     vibrate: true,
@@ -149,7 +163,7 @@ const App = () => {
 
   const alert = () => {
     PushNotification.localNotification({
-      channelId: CHANNEL_ID,
+      channelId: SLOT_CHANNEL_ID,
       message: 'Slots available! Hurry up!',
       playSound: true,
       soundName: 'notification_tone.mp3',
@@ -166,7 +180,7 @@ const App = () => {
 
   const getOTPNotification = () => {
     PushNotification.localNotification({
-      channelId: CHANNEL_ID,
+      channelId: AUTH_CHANNEL_ID,
       message: 'Enter OTP to continue getting latest updates for slots',
       playSound: true,
       soundName: 'notification_tone.mp3',

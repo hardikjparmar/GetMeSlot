@@ -1,5 +1,5 @@
 import React from 'react';
-import {Text, View, StyleSheet, TouchableOpacity} from 'react-native';
+import {Text, View, StyleSheet} from 'react-native';
 import {Session} from './../../Types/SlotTypes';
 
 export const SessionListItem: React.FC<{
@@ -7,9 +7,8 @@ export const SessionListItem: React.FC<{
   onSessionSelected: (session: Session) => void;
 }> = ({session, onSessionSelected}) => {
   return (
-    <TouchableOpacity
-      style={SessionListStyles.containerView}
-      onPress={() => onSessionSelected(session)}>
+    <View style={SessionListStyles.containerView}>
+      {/* {onPress={() => onSessionSelected(session)}>} */}
       <View style={{flexDirection: 'row', justifyContent: 'center'}}>
         <View
           style={{
@@ -40,7 +39,7 @@ export const SessionListItem: React.FC<{
           </Text>
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
