@@ -1,6 +1,6 @@
 import {RouteProp, useRoute} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Switch} from 'react-native';
+import {View, Text, StyleSheet, Switch, TextInput} from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import {
   AgeFilters,
@@ -18,12 +18,14 @@ import {
   getUserDosePreference,
   getUserFeeTypePreference,
   getUserLoginPreference,
+  getUserPincodePreference,
   getUserStateIdPreference,
   getUserVaccinePreference,
   saveUserAgePreference,
   saveUserDistrictIdPreference,
   saveUserDosePreference,
   saveUserLoginPreference,
+  saveUserPincodePreference,
   saveUserStateIdPreference,
   saveUserStatePreference,
   saveUserVaccinePreference,
@@ -98,12 +100,14 @@ export const SettingsScreen = () => {
     setSelectedFeeType,
     shouldAutoLogin,
     setShouldAutoLogin,
+    setPincode,
   } = useSlots();
 
   const selectedBens = route.params.beneficiaries;
 
   const [stateList, setStateList] = useState<STATE[]>([]);
   const [districtList, setDistrictList] = useState<DISTRICT[]>([]);
+  const [userInputPincode, setUserInputPincode] = useState('');
 
   useEffect(() => {
     getUserAgePreference().then(age => {
@@ -147,6 +151,12 @@ export const SettingsScreen = () => {
     getUserLoginPreference().then(login => {
       if (login !== undefined) {
         setShouldAutoLogin(login);
+      }
+    });
+    getUserPincodePreference().then(code => {
+      if (code) {
+        setPincode(code);
+        setUserInputPincode(code.toString());
       }
     });
   }, []);
@@ -204,6 +214,19 @@ export const SettingsScreen = () => {
   const toggleSwitch = (previousState: boolean) => {
     setShouldAutoLogin(previousState);
     saveUserLoginPreference(previousState);
+  };
+
+  const onPincodeChange = (text: string) => {
+    console.log('INPUT: ', text);
+    setUserInputPincode(text);
+    if (text.length === 6) {
+      console.log('will change pin');
+      setPincode(+text);
+      saveUserPincodePreference(+text);
+    } else {
+      setPincode(0);
+      saveUserPincodePreference(undefined);
+    }
   };
 
   return (
@@ -326,6 +349,20 @@ export const SettingsScreen = () => {
             </View>
           </View>
         ) : null}
+        <View>
+          <Text>(Optional) Select Pincode</Text>
+          <TextInput
+            keyboardType="phone-pad"
+            placeholder="Pincode"
+            placeholderTextColor="#c4c3cb"
+            style={[
+              Styles.loginFormTextInput,
+              {color: userInputPincode.length === 6 ? '#000000' : 'red'},
+            ]}
+            onChangeText={onPincodeChange}
+            value={userInputPincode}
+          />
+        </View>
       </ScrollView>
     </View>
   );
@@ -345,5 +382,17 @@ const Styles = StyleSheet.create({
   pickerContainer: {
     borderWidth: 1,
     borderColor: '#808080',
+  },
+  loginFormTextInput: {
+    height: 43,
+    fontSize: 14,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#eaeaea',
+    backgroundColor: '#fafafa',
+    color: '#000000',
+    paddingLeft: 10,
+    marginTop: 5,
+    marginBottom: 5,
   },
 });

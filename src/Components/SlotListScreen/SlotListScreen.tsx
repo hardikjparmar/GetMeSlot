@@ -13,7 +13,10 @@ import {
 } from 'react-native';
 
 import {CenterListItem} from '../CenterListItem/CenterListItem';
-import {checkUserStatus, getBeneficiaryList} from '../../Storage/LocalStorage';
+import {
+  getBeneficiaryList,
+  checkLoginSessionExpired,
+} from '../../Storage/LocalStorage';
 import {RootStackParamList} from './../../Navigation/RootStackParams';
 import {SessionListItem} from '../SessionListItem/SessionListItem';
 import {Center, Session} from '../../Types/SlotTypes';
@@ -54,8 +57,8 @@ const SlotListScreen = () => {
   const [selectedBens, setSelectedBens] = useState<Array<Beneficiary>>([]);
 
   useLayoutEffect(() => {
-    checkUserStatus().then(cred => {
-      if (cred === undefined) {
+    checkLoginSessionExpired().then(isLoginExpired => {
+      if (isLoginExpired) {
         navigation.setOptions({
           headerRight: () => (
             <View style={{marginRight: 12}}>

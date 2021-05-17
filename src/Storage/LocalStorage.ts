@@ -62,21 +62,28 @@ export const getMobileNumber = async (): Promise<string | undefined> => {
   return undefined;
 };
 
-export const checkUserStatus = async (): Promise<string | undefined> => {
+export const checkLoginSessionExpired = async (): Promise<boolean> => {
+  try {
+    const loginTimestamp = await getLoggedInTime();
+    if (loginTimestamp && Date.now() - loginTimestamp <= 15 * 60 * 1000) {
+      return false;
+    }
+  } catch (error) {
+    console.log('Error: ', error);
+  }
+  return true;
+};
+
+export const getUserToken = async (): Promise<string | undefined> => {
   try {
     const credentials = await Keychain.getGenericPassword();
-    const loginTimestamp = await getLoggedInTime();
-    if (
-      credentials &&
-      loginTimestamp &&
-      Date.now() - loginTimestamp <= 15 * 60 * 1000
-    ) {
+    if (credentials) {
       return credentials.password;
     }
   } catch (error) {
     console.log("Keychain couldn't be accessed!", error);
-    return undefined;
   }
+  return undefined;
 };
 
 export const removeCredentials = async () => {
@@ -218,6 +225,26 @@ export const getUserLoginPreference = async (): Promise<
   const loginPref = await AsyncStorage.getItem('UserLoginPreference');
   if (loginPref) {
     return JSON.parse(loginPref);
+  }
+  return undefined;
+};
+
+export const saveUserPincodePreference = async (
+  districtId: number | undefined,
+) => {
+  if (districtId) {
+    AsyncStorage.setItem('UserPincodePreference', JSON.stringify(districtId));
+  } else {
+    AsyncStorage.removeItem('UserPincodePreference');
+  }
+};
+
+export const getUserPincodePreference = async (): Promise<
+  number | undefined
+> => {
+  const pincodePref = await AsyncStorage.getItem('UserPincodePreference');
+  if (pincodePref) {
+    return JSON.parse(pincodePref);
   }
   return undefined;
 };

@@ -42,13 +42,15 @@ import {
   VaccineType,
 } from './Components/SettingsScreen/SettingsScreen';
 import {
-  checkUserStatus,
+  checkLoginSessionExpired,
   getLastAuthAlertTime,
   getMobileNumber,
   getUserAgePreference,
   getUserDistrictIdPreference,
   getUserFeeTypePreference,
   getUserLoginPreference,
+  getUserPincodePreference,
+  getUserToken,
   getUserVaccinePreference,
   setLastAuthAlertTime,
 } from './Storage/LocalStorage';
@@ -132,6 +134,8 @@ type SlotContextType = {
   setSelectedDose: (dose: number) => void;
   shouldAutoLogin: boolean;
   setShouldAutoLogin: (autologin: boolean) => void;
+  pincode: number;
+  setPincode: (code: number) => void;
 };
 
 const SlotContext = createContext<SlotContextType>({
@@ -151,6 +155,8 @@ const SlotContext = createContext<SlotContextType>({
   setSelectedDose: (dose: number) => console.warn('No setter'),
   shouldAutoLogin: false,
   setShouldAutoLogin: (autologin: boolean) => console.warn('No setter'),
+  pincode: 0,
+  setPincode: (code: number) => console.warn('No setter'),
 });
 
 export const useSlots = () => useContext(SlotContext);
@@ -166,6 +172,7 @@ const App = () => {
   const [selectedDistrict, setSelectedDistrict] = useState(0);
   const [selectedDose, setSelectedDose] = useState(1);
   const [shouldAutoLogin, setShouldAutoLogin] = useState(false);
+  const [pincode, setPincode] = useState(0);
 
   const alert = () => {
     PushNotification.localNotification({
@@ -212,8 +219,10 @@ const App = () => {
     const vaccinePromise = getUserVaccinePreference();
     const feePromise = getUserFeeTypePreference();
     const districtIdPromise = getUserDistrictIdPreference();
-    const tokenPromise = checkUserStatus();
+    const tokenPromise = getUserToken();
+    const loginExpiryPromise = checkLoginSessionExpired();
     const loginPromise = getUserLoginPreference();
+    const pincodePromise = getUserPincodePreference();
 
     const allPromise = Promise.all([
       agePromise,
@@ -221,68 +230,88 @@ const App = () => {
       feePromise,
       districtIdPromise,
       tokenPromise,
+      loginExpiryPromise,
       loginPromise,
+      pincodePromise,
     ]);
 
-    allPromise.then(([age, vaccine, fee, disId, token, autoLogin]) => {
-      let preferredAge = age ? age : minAge;
-      setAgeFilter(preferredAge.toString());
-      console.log('Preferred Age: ' + preferredAge);
-      let preferredVaccine = vaccine ? vaccine : VACCINE_PREF;
-      setSelectedVaccine(
-        VaccineType[preferredVaccine as keyof typeof VaccineType],
-      );
-      console.log('Preferred Vaccine: ' + preferredVaccine);
-      let preferredFees = fee ? fee : FEE_PREF;
-      setSelectedFeeType(FeeType[preferredFees as keyof typeof FeeType]);
-      console.log('Preferred Fee: ' + preferredFees);
-      let preferredDistrictId = disId ? disId : DISTRICT_ID_PREF;
-      setSelectedDistrict(+preferredDistrictId);
-      console.log('Preferred District: ' + preferredDistrictId);
-      let currentToken = token ? token : '';
-      const vaccineParam =
-        preferredVaccine !== VaccineType[VaccineType.BOTH]
-          ? preferredVaccine
-          : undefined;
-      if (autoLogin) {
-        setShouldAutoLogin(autoLogin);
-      }
-      if (token === undefined && autoLogin === true) {
-        console.log('token expired!!!');
-        getLastAuthAlertTime().then(time => {
-          if (
-            (time && Date.now() - time > 5 * 60 * 1000) ||
-            time === undefined
-          ) {
-            // 5 mins
-            getOTPNotification();
-            setLastAuthAlertTime(Date.now().toString());
-          }
-        });
-      }
-      getSlots(preferredDistrictId, today(), currentToken, vaccineParam).then(
-        res => {
-          if (res) {
-            setCenters(res);
-            const filteredList = res.filter(item => {
-              return (
-                item.sessions.filter(
-                  session =>
-                    session.available_capacity > 0 &&
-                    session.min_age_limit === preferredAge,
-                ).length > 0 &&
-                (preferredFees !== FeeType[FeeType.BOTH]
-                  ? item.fee_type.toLowerCase() === preferredFees.toLowerCase()
-                  : true)
-              );
-            });
-            if (filteredList.length > 0) {
-              alert();
+    allPromise.then(
+      ([
+        age,
+        vaccine,
+        fee,
+        disId,
+        token,
+        isLoginExpired,
+        autoLogin,
+        savedPincode,
+      ]) => {
+        let preferredAge = age ? age : minAge;
+        setAgeFilter(preferredAge.toString());
+        console.log('Preferred Age: ' + preferredAge);
+        let preferredVaccine = vaccine ? vaccine : VACCINE_PREF;
+        setSelectedVaccine(
+          VaccineType[preferredVaccine as keyof typeof VaccineType],
+        );
+        console.log('Preferred Vaccine: ' + preferredVaccine);
+        let preferredFees = fee ? fee : FEE_PREF;
+        setSelectedFeeType(FeeType[preferredFees as keyof typeof FeeType]);
+        console.log('Preferred Fee: ' + preferredFees);
+        let preferredDistrictId = disId ? disId : DISTRICT_ID_PREF;
+        setSelectedDistrict(+preferredDistrictId);
+        console.log('Preferred District: ' + preferredDistrictId);
+        let currentToken = token ? token : '';
+        const vaccineParam =
+          preferredVaccine !== VaccineType[VaccineType.BOTH]
+            ? preferredVaccine
+            : undefined;
+        if (autoLogin) {
+          setShouldAutoLogin(autoLogin);
+        }
+        if (savedPincode) {
+          setPincode(savedPincode);
+        }
+        if (isLoginExpired && autoLogin === true) {
+          console.log('token expired!!!');
+          getLastAuthAlertTime().then(time => {
+            if (
+              (time && Date.now() - time > 5 * 60 * 1000) ||
+              time === undefined
+            ) {
+              // 5 mins
+              getOTPNotification();
+              setLastAuthAlertTime(Date.now().toString());
             }
-          }
-        },
-      );
-    });
+          });
+        }
+        getSlots(preferredDistrictId, today(), currentToken, vaccineParam).then(
+          res => {
+            if (res) {
+              setCenters(res);
+              const filteredList = res.filter(item => {
+                return (
+                  item.sessions.filter(
+                    session =>
+                      session.available_capacity > 0 &&
+                      session.min_age_limit === preferredAge,
+                  ).length > 0 &&
+                  (preferredFees !== FeeType[FeeType.BOTH]
+                    ? item.fee_type.toLowerCase() ===
+                      preferredFees.toLowerCase()
+                    : true) &&
+                  (savedPincode && savedPincode.toString().length === 6
+                    ? item.pincode === savedPincode
+                    : true)
+                );
+              });
+              if (filteredList.length > 0) {
+                alert();
+              }
+            }
+          },
+        );
+      },
+    );
   };
 
   useEffect(() => {
@@ -308,6 +337,8 @@ const App = () => {
         setSelectedDose,
         shouldAutoLogin,
         setShouldAutoLogin,
+        pincode,
+        setPincode,
       }}>
       <NavigationContainer ref={Navigator.setContainer}>
         <Stack.Navigator>

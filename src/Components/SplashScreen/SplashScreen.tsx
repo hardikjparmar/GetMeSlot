@@ -6,7 +6,7 @@ import {RootStackParamList} from './../../Navigation/RootStackParams';
 import {name as appName} from './../../app.json';
 import {
   checkFirstLaunch,
-  checkUserStatus,
+  getUserToken,
   removeCredentials,
 } from '../../Storage/LocalStorage';
 
@@ -26,12 +26,12 @@ const SplashScreen = () => {
           });
         }, 1000);
       } else {
-        checkUserStatus().then(data => {
-          if (data) {
-            console.log(`Existing Token: ${data}`);
+        getUserToken().then(t => {
+          if (t) {
+            console.log(`Existing Token: ${t}`);
             navigation.reset({
               index: 0,
-              routes: [{name: 'SlotListScreen', params: {token: data}}],
+              routes: [{name: 'SlotListScreen', params: {token: t}}],
             });
           } else {
             setTimeout(() => {
