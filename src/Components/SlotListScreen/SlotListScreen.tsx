@@ -45,6 +45,8 @@ const SlotListScreen = () => {
     selectedDistrict,
     selectedFeeType,
     selectedVaccine,
+    selectedDose,
+    pincode,
   } = useSlots();
 
   const navigation = useNavigation<SlotListScreenNavigationProp>();
@@ -144,11 +146,17 @@ const SlotListScreen = () => {
       return (
         item.sessions.filter(
           session =>
-            session.available_capacity > 0 && session.min_age_limit === minAge,
+            (selectedDose == 2
+              ? session.available_capacity_dose2 > 0
+              : session.available_capacity_dose1 > 0) &&
+            session.min_age_limit === minAge,
         ).length > 0 &&
         (selectedFeeType !== FeeType.BOTH
           ? item.fee_type.toLowerCase() ===
             FeeType[selectedFeeType].toLowerCase()
+          : true) &&
+        (pincode && pincode.toString().length === 6
+          ? item.pincode === pincode
           : true)
       );
     });

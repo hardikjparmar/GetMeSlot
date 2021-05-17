@@ -47,6 +47,7 @@ import {
   getMobileNumber,
   getUserAgePreference,
   getUserDistrictIdPreference,
+  getUserDosePreference,
   getUserFeeTypePreference,
   getUserLoginPreference,
   getUserPincodePreference,
@@ -223,6 +224,7 @@ const App = () => {
     const loginExpiryPromise = checkLoginSessionExpired();
     const loginPromise = getUserLoginPreference();
     const pincodePromise = getUserPincodePreference();
+    const dosePromise = getUserDosePreference();
 
     const allPromise = Promise.all([
       agePromise,
@@ -233,6 +235,7 @@ const App = () => {
       loginExpiryPromise,
       loginPromise,
       pincodePromise,
+      dosePromise,
     ]);
 
     allPromise.then(
@@ -245,6 +248,7 @@ const App = () => {
         isLoginExpired,
         autoLogin,
         savedPincode,
+        savedDose,
       ]) => {
         let preferredAge = age ? age : minAge;
         setAgeFilter(preferredAge.toString());
@@ -284,6 +288,7 @@ const App = () => {
             }
           });
         }
+        let dosePref = savedDose ? savedDose : 1;
         getSlots(preferredDistrictId, today(), currentToken, vaccineParam).then(
           res => {
             if (res) {
@@ -292,7 +297,9 @@ const App = () => {
                 return (
                   item.sessions.filter(
                     session =>
-                      session.available_capacity > 0 &&
+                      (dosePref === 2
+                        ? session.available_capacity_dose2 > 0
+                        : session.available_capacity_dose1 > 0) &&
                       session.min_age_limit === preferredAge,
                   ).length > 0 &&
                   (preferredFees !== FeeType[FeeType.BOTH]
@@ -304,6 +311,8 @@ const App = () => {
                     : true)
                 );
               });
+              console.log('Saved Pincode: ', savedPincode);
+
               if (filteredList.length > 0) {
                 alert();
               }
