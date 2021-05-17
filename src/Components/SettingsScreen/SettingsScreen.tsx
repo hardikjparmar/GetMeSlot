@@ -1,6 +1,6 @@
 import {RouteProp, useRoute} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, Switch} from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import {
   AgeFilters,
@@ -17,12 +17,13 @@ import {
   getUserDistrictIdPreference,
   getUserDosePreference,
   getUserFeeTypePreference,
+  getUserLoginPreference,
   getUserStateIdPreference,
   getUserVaccinePreference,
   saveUserAgePreference,
   saveUserDistrictIdPreference,
-  saveUserDistrictPreference,
   saveUserDosePreference,
+  saveUserLoginPreference,
   saveUserStateIdPreference,
   saveUserStatePreference,
   saveUserVaccinePreference,
@@ -95,6 +96,8 @@ export const SettingsScreen = () => {
     setSelectedDose,
     selectedFeeType,
     setSelectedFeeType,
+    shouldAutoLogin,
+    setShouldAutoLogin,
   } = useSlots();
 
   const selectedBens = route.params.beneficiaries;
@@ -139,6 +142,11 @@ export const SettingsScreen = () => {
     getUserDistrictIdPreference().then(dt => {
       if (dt) {
         setSelectedDistrict(+dt);
+      }
+    });
+    getUserLoginPreference().then(login => {
+      if (login !== undefined) {
+        setShouldAutoLogin(login);
       }
     });
   }, []);
@@ -191,7 +199,11 @@ export const SettingsScreen = () => {
     const currentDistrict = districtList[index];
     setSelectedDistrict(currentDistrict.district_id);
     saveUserDistrictIdPreference(currentDistrict.district_id);
-    saveUserDistrictPreference(currentDistrict.district_name);
+  };
+
+  const toggleSwitch = (previousState: boolean) => {
+    setShouldAutoLogin(previousState);
+    saveUserLoginPreference(previousState);
   };
 
   return (
@@ -207,6 +219,21 @@ export const SettingsScreen = () => {
           Below settings would be used to make it faster to book the slot
           whenever available!
         </Text>
+        <View>
+          <Text>
+            Do you want to stay logged in? You will get notification to enter
+            OTP in every 15 mins.
+          </Text>
+          <View style={Styles.radioContainer}>
+            <Switch
+              trackColor={{false: '#767577', true: '#81b0ff'}}
+              thumbColor={'#f4f3f4'}
+              ios_backgroundColor="#3e3e3e"
+              onValueChange={toggleSwitch}
+              value={shouldAutoLogin}
+            />
+          </View>
+        </View>
         <View>
           <Text>Select Dose</Text>
           <View style={Styles.radioContainer}>

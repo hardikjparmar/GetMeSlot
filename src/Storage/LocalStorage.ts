@@ -208,16 +208,16 @@ export const getUserDistrictIdPreference = async (): Promise<
   return undefined;
 };
 
-export const saveUserDistrictPreference = async (fee: string) => {
-  AsyncStorage.setItem('UserDistrictePreference', fee);
+export const saveUserLoginPreference = async (autoLogin: boolean) => {
+  AsyncStorage.setItem('UserLoginPreference', JSON.stringify(autoLogin));
 };
 
-export const getUserDistrictPreference = async (): Promise<
-  string | undefined
+export const getUserLoginPreference = async (): Promise<
+  boolean | undefined
 > => {
-  const districtPref = await AsyncStorage.getItem('UserDistrictPreference');
-  if (districtPref) {
-    return districtPref;
+  const loginPref = await AsyncStorage.getItem('UserLoginPreference');
+  if (loginPref) {
+    return JSON.parse(loginPref);
   }
   return undefined;
 };

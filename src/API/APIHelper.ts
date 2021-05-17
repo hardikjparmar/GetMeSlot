@@ -65,7 +65,7 @@ export const getOTPFromAPI = async (
       data: {
         mobile: mobileNumber,
         secret:
-          'U2FsdGVkX1+z/4Nr9nta+2DrVJSv7KS6VoQUSQ1ZXYDx/CJUkWxFYG6P3iM/VW+6jLQ9RDQVzp/RcZ8kbT41xw==',
+          'U2FsdGVkX18EEQv2JQ3AaZnPPul2tkqk2A89zdTPvC8daXF6r6BP6THCtA9ZaijXcGHqC2u1a1aqhdbwceyeHg==',
       },
     });
 

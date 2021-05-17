@@ -1,7 +1,7 @@
 export const baseUrl = 'https://cdn-api.co-vin.in/api';
 export const generateOTP = `/v2/auth/generateMobileOTP`;
 export const confirmOTP = `/v2/auth/validateMobileOtp`;
-export const getSlots = `/v2/appointment/sessions/public/calendarByDistrict`;
+export const getSlots = `/v2/appointment/sessions/calendarByDistrict`;
 export const getSlotsProtected = `/v2/appointment/sessions/calendarByDistrict`;
 export const getBeneficieryDetails = `/v2/appointment/beneficiaries`;
 export const bookAppointment = '/v2/appointment/schedule';

@@ -48,6 +48,7 @@ import {
   getUserAgePreference,
   getUserDistrictIdPreference,
   getUserFeeTypePreference,
+  getUserLoginPreference,
   getUserVaccinePreference,
   setLastAuthAlertTime,
 } from './Storage/LocalStorage';
@@ -129,6 +130,8 @@ type SlotContextType = {
   setSelectedDistrict: (district: number) => void;
   selectedDose: number;
   setSelectedDose: (dose: number) => void;
+  shouldAutoLogin: boolean;
+  setShouldAutoLogin: (autologin: boolean) => void;
 };
 
 const SlotContext = createContext<SlotContextType>({
@@ -146,6 +149,8 @@ const SlotContext = createContext<SlotContextType>({
   setSelectedDistrict: (district: number) => console.warn('No setter'),
   selectedDose: 1,
   setSelectedDose: (dose: number) => console.warn('No setter'),
+  shouldAutoLogin: false,
+  setShouldAutoLogin: (autologin: boolean) => console.warn('No setter'),
 });
 
 export const useSlots = () => useContext(SlotContext);
@@ -160,6 +165,7 @@ const App = () => {
   const [selectedState, setSelectedState] = useState(0);
   const [selectedDistrict, setSelectedDistrict] = useState(0);
   const [selectedDose, setSelectedDose] = useState(1);
+  const [shouldAutoLogin, setShouldAutoLogin] = useState(false);
 
   const alert = () => {
     PushNotification.localNotification({
@@ -175,6 +181,8 @@ const App = () => {
       when: Date.now(),
       smallIcon: 'ic_stat_getmeslot',
       largeIcon: '',
+      id: 321,
+      messageId: '321',
     });
   };
 
@@ -205,6 +213,7 @@ const App = () => {
     const feePromise = getUserFeeTypePreference();
     const districtIdPromise = getUserDistrictIdPreference();
     const tokenPromise = checkUserStatus();
+    const loginPromise = getUserLoginPreference();
 
     const allPromise = Promise.all([
       agePromise,
@@ -212,9 +221,10 @@ const App = () => {
       feePromise,
       districtIdPromise,
       tokenPromise,
+      loginPromise,
     ]);
 
-    allPromise.then(([age, vaccine, fee, disId, token]) => {
+    allPromise.then(([age, vaccine, fee, disId, token, autoLogin]) => {
       let preferredAge = age ? age : minAge;
       setAgeFilter(preferredAge.toString());
       console.log('Preferred Age: ' + preferredAge);
@@ -234,7 +244,10 @@ const App = () => {
         preferredVaccine !== VaccineType[VaccineType.BOTH]
           ? preferredVaccine
           : undefined;
-      if (token === undefined) {
+      if (autoLogin) {
+        setShouldAutoLogin(autoLogin);
+      }
+      if (token === undefined && autoLogin === true) {
         console.log('token expired!!!');
         getLastAuthAlertTime().then(time => {
           if (
@@ -293,6 +306,8 @@ const App = () => {
         setSelectedDistrict,
         selectedDose,
         setSelectedDose,
+        shouldAutoLogin,
+        setShouldAutoLogin,
       }}>
       <NavigationContainer ref={Navigator.setContainer}>
         <Stack.Navigator>
