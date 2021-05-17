@@ -362,6 +362,9 @@ export const SettingsScreen = () => {
             onChangeText={onPincodeChange}
             value={userInputPincode}
           />
+          <Text>
+            Make sure the pincode is of the selected state and district.
+          </Text>
         </View>
       </ScrollView>
     </View>
