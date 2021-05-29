@@ -77,7 +77,8 @@ export const checkLoginSessionExpired = async (): Promise<boolean> => {
 export const getUserToken = async (): Promise<string | undefined> => {
   try {
     const credentials = await Keychain.getGenericPassword();
-    if (credentials) {
+    const isLoginExpired = await checkLoginSessionExpired();
+    if (credentials && !isLoginExpired) {
       return credentials.password;
     }
   } catch (error) {

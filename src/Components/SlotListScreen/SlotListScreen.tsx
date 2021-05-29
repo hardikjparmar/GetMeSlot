@@ -164,21 +164,21 @@ const SlotListScreen = () => {
   };
 
   const onSessionSelected = (session: Session) => {
-    // checkUserStatus().then(cred => {
-    //   if (cred === undefined) {
-    //     navigation.reset({
-    //       index: 0,
-    //       routes: [{name: 'LoginScreen'}],
-    //     });
-    //   } else {
-    //     // Book this slot
-    //     navigation.navigate('BookingScreen', {
-    //       token: token,
-    //       session: session,
-    //       selectedBens: selectedBens,
-    //     });
-    //   }
-    // });
+    checkLoginSessionExpired().then(isLoginExpired => {
+      if (isLoginExpired) {
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'LoginScreen'}],
+        });
+      } else {
+        // Book this slot
+        navigation.navigate('BookingScreen', {
+          token: token,
+          session: session,
+          selectedBens: selectedBens,
+        });
+      }
+    });
   };
 
   const onBeneficiarySelected = (beneficiary: Array<Beneficiary>) => {
