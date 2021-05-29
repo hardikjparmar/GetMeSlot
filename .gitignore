@@ -309,3 +309,7 @@ ios/Pods/
 **/*.d.ts
 **/*.js
 **/*.map
+!babel.config.js
+!metro.config.js
+!.eslintrc.js
+!.prettierrc.js
