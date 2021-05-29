@@ -14,7 +14,7 @@ PS: The notification service works on Android only!
 
 ## Download APK
 
-Download the Latest APK from [HERE](https://github.com/hardikjparmar/GetMeSlot/releases/download/v1.4/GetMeSlot-v1.4.apk)!
+Download the Latest APK from [HERE](https://github.com/hardikjparmar/GetMeSlot/releases/download/v1.4.1/GetMeSlot-v1.4.1.apk)!
 
 ## APIs
 
