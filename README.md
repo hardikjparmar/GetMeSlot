@@ -12,9 +12,9 @@ GetMeSlot is a Reat Native App which can help you in booking slots to get yourse
 
 PS: The notification service works on Android only!
 
-## Download APK
+## Download App
 
-Download the Latest APK from [HERE](https://github.com/hardikjparmar/GetMeSlot/releases/download/v1.4/GetMeSlot-v1.4.apk)!
+Download the App from [Playstore](https://play.google.com/store/apps/details?id=com.getmeslot)!
 
 ## APIs
 
